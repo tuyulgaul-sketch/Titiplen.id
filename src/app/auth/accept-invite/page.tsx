@@ -2,6 +2,7 @@
 
 import {useEffect, useState, type FormEvent} from 'react';
 import Link from 'next/link';
+import {BrandMark} from '@/components/brand-mark';
 import {CheckCircle2, Eye, EyeOff, KeyRound, ShieldCheck, ShoppingBag} from 'lucide-react';
 import {getSupabase} from '@/lib/supabase';
 
@@ -51,7 +52,7 @@ export default function AcceptInvite(){
   }
 
   return <main className="auth-box">
-    <Link href="/" className="brand-brand"><span className="brand-symbol"><ShoppingBag size={20}/></span>Titiplen.id</Link>
+    <BrandMark/>
     {status==='checking'&&<><div className="spinner"/><p style={{textAlign:'center'}}>Memeriksa tautan aktivasi…</p></>}
     {status==='invalid'&&<><KeyRound size={30} color="#b97560" style={{marginTop:22}}/><h1>Tautan tidak valid</h1><p>Link undangan mungkin sudah digunakan atau kedaluwarsa. Hubungi pengelola Titiplen untuk meminta tautan aktivasi ulang.</p><Link href="/admin" className="button button-outline" style={{width:'100%'}}>Kembali ke login</Link></>}
     {(status==='ready'||status==='saving')&&<>

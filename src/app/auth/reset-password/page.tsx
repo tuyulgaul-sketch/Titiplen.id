@@ -2,6 +2,7 @@
 
 import {useState,type FormEvent} from 'react';
 import Link from 'next/link';
+import {BrandMark} from '@/components/brand-mark';
 import {ArrowLeft,Mail,ShieldCheck,ShoppingBag} from 'lucide-react';
 import {getSupabase} from '@/lib/supabase';
 
@@ -22,7 +23,7 @@ export default function ResetPasswordPage(){
     finally{setSending(false);}
   }
   return <main className="auth-box">
-    <Link className="brand-brand" href="/"><span className="brand-symbol"><ShoppingBag size={20}/></span>Titiplen.id</Link>
+    <BrandMark/>
     <div style={{marginTop:24}}><ShieldCheck size={30} color="#A04471"/></div>
     <h1>{sent?'Periksa email kamu':'Buat ulang password'}</h1>
     {sent?<><p>Jika email terdaftar, tautan pemulihan sudah diminta. Buka pesan terbaru dari Supabase/Titiplen dan lanjutkan untuk membuat password di situs ini. Jangan bagikan tautan kepada orang lain.</p><Link href="/admin" className="button button-outline" style={{width:'100%'}}>Kembali ke login</Link></>:

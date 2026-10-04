@@ -33,3 +33,17 @@
 .search-input:focus-visible,.form-input:focus-visible,.form-select:focus-visible,.form-textarea:focus-visible{outline:2px solid #D68DB2;outline-offset:1px}
 .money-control:focus-within{box-shadow:0 0 0 3px #F4CEDF}
 ::selection{background:#F5CDDF;color:#502039}
+
+/* Official Titiplen illustrated brand mascot, cropped and compressed for fast dashboard loading. */
+.brand-with-mascot{gap:8px;white-space:nowrap}
+.brand-mascot{object-fit:contain;display:block;width:52px;height:52px;flex:none;filter:drop-shadow(0 4px 7px #782A4D24)}
+.brand-compact .brand-mascot{width:52px;height:52px}
+.brand-word{display:inline;letter-spacing:-.05em}
+.brand-inverted .brand-word{color:#FFF9FC}
+.brand-inverted .brand-dot{color:#FFE3EF}
+.sidebar .brand-with-mascot{margin:0 4px 34px;white-space:nowrap;font-size:19px}
+.sidebar .brand-with-mascot .brand-mascot{width:52px;height:52px}
+.auth-mascot{display:block;width:104px;height:104px;object-fit:contain;margin:18px auto -5px;filter:drop-shadow(0 8px 14px #71385315)}
+.customer-mascot{display:block;width:92px;height:92px;object-fit:contain;margin:0 auto 8px}
+.hero-brand-sticker{position:absolute;z-index:3;width:145px;height:145px;object-fit:contain;top:-3px;right:-9px;filter:drop-shadow(0 11px 13px #71385322);transform:rotate(9deg)}
+@media(max-width:750px){.hero-brand-sticker{width:108px;height:108px;right:5px;top:10px}.sidebar .brand-with-mascot{margin:0 3px}.sidebar .brand-with-mascot .brand-mascot{width:42px;height:42px}.auth-mascot{width:90px;height:90px}.brand-mascot{width:44px;height:44px}}
