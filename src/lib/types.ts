@@ -1,0 +1,11 @@
+export type Customer={id:string;name:string;phone_e164:string;created_at?:string};
+export type Event={id:string;name:string;event_date:string|null;status:string;created_at?:string};
+export type Order={id:string;customer_id:string;event_id:string|null;created_at:string;notes:string|null};
+export type OrderItem={id:string;order_id:string;brand:string;product_name:string;variant:string;quantity:number;cost_unit:number;fee_unit:number;extra_fee_unit:number;shipping_charge:number;shipping_cost:number;discount:number};
+export type Invoice={id:string;customer_id:string;invoice_number:string;due_date:string|null;created_at:string;notes:string|null};
+export type InvoiceItem={id:string;invoice_id:string;order_item_id:string};
+export type Payment={id:string;invoice_id:string;amount:number;paid_at:string;reference:string|null;method:string};
+export type Expense={id:string;event_id:string|null;category:string;description:string;amount:number;spent_at:string};
+export type ShopSettings={id:number;whatsapp_number:string;qris_image_url:string;business_name:string};
+export type StoreData={customers:Customer[];events:Event[];orders:Order[];order_items:OrderItem[];invoices:Invoice[];invoice_items:InvoiceItem[];payments:Payment[];expenses:Expense[];settings:ShopSettings[]};
+export type StoreTable=keyof StoreData;

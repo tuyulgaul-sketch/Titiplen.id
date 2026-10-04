@@ -1,0 +1,1 @@
+import Link from 'next/link';export default function NotFound(){return <div className="auth-box"><h1>Halaman tidak ditemukan</h1><p>Link yang kamu buka mungkin sudah berubah.</p><Link href="/" className="button button-dark">Kembali ke Titiplen.id</Link></div>}
