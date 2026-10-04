@@ -2,6 +2,8 @@
 -- No user data or Supabase keys should be committed to Git.
 create extension if not exists pgcrypto;
 create sequence if not exists public.invoice_seq;
+-- Required by the invoice number default for authenticated admin inserts.
+grant usage, select on sequence public.invoice_seq to authenticated;
 create table if not exists public.admin_users (
   user_id uuid primary key references auth.users(id) on delete cascade,
   created_at timestamptz not null default now()
