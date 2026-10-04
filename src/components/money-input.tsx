@@ -39,7 +39,6 @@ export function Money({ value, onChange, disabled, placeholder }: MoneyProps) {
         type="text"
         inputMode="numeric"
         autoComplete="off"
-        aria-label="Nominal rupiah"
         spellCheck={false}
         value={formatRupiahInput(value)}
         disabled={disabled}
