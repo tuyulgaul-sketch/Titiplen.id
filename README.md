@@ -2,7 +2,23 @@
 
 Next.js App Router MVP untuk dua POV: **admin operasional** dan **customer berdasarkan nomor HP terverifikasi**.
 
-> ⚠️ **Status:** source MVP sudah ada di GitHub dan skema sudah terpasang pada project Supabase Titiplen.id (`pukkwituooodcbtdruki`). Belum di-deploy / dikonfigurasikan ke frontend produksi. Jangan gunakan untuk transaksi riil sebelum database, OTP, QRIS, dan pengujian siap. Data demo hanya contoh dan tersimpan di localStorage browser.
+> ⚠️ **Status:** source MVP sudah ter-deploy di Vercel dan skema sudah terpasang pada project Supabase Titiplen.id (`pukkwituooodcbtdruki`). Login admin, OTP SMS, QRIS asli, dan verifikasi end-to-end belum selesai; jangan gunakan untuk transaksi riil sebelum semuanya diuji. Jangan gunakan untuk transaksi riil sebelum database, OTP, QRIS, dan pengujian siap. Data demo hanya contoh dan tersimpan di localStorage browser.
+
+## Deployment Titiplen.id
+
+- Production URL: https://titiplen-id-das-7350.vercel.app/
+- Admin: https://titiplen-id-das-7350.vercel.app/admin
+- Customer: https://titiplen-id-das-7350.vercel.app/cek-invoice
+- Aktivasi admin: https://titiplen-id-das-7350.vercel.app/auth/accept-invite
+- Vercel project: `titiplen-id` (DAS team, **project terpisah**, bukan project Dashboard Marketing).
+- Supabase: `pukkwituooodcbtdruki` (akun/project khusus Titiplen, **tidak memakai database PertaLife**).
+
+**Wajib sebelum mengundang admin:**
+1. Supabase Titiplen → Authentication → URL Configuration → ubah **Site URL** dari localhost ke **https://titiplen-id-das-7350.vercel.app/auth/accept-invite**.
+2. Tambahkan **Redirect URL** HTTPS yang benar pada URL Configuration (setidaknya route `/auth/accept-invite`).
+3. Jika undangan email sebelumnya telah dibuka dan diarahkan ke localhost, cek Authentication → Users. Jika user belum confirmed, kirim undangan ulang. Jika sudah confirmed tetapi belum set password, kirim **password recovery email** agar bisa membuka route aktivasi dengan session baru.
+4. Akun yang sudah diverifikasi dan memiliki password masih memerlukan grant allowlist `admin_users` melalui SQL Editor sesuai instruksi di bawah. Jangan membuat admin dari data `user_metadata`.
+5. Uji login admin dan query Supabase dengan akun tersebut. Layanan SMS OTP untuk customer masih perlu dikonfigurasi sendiri; jangan membuka transaksi riil sebelum pengujian selesai.
 
 ## Lingkup MVP
 
