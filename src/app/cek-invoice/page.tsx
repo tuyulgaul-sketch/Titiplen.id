@@ -73,7 +73,7 @@ export default function CustomerPage(){
  }
  const waLink=(invoice:Invoice)=>{const wa=settings?.whatsapp_number?.replace(/\D/g,'')||'';
   const msg='Halo admin '+(settings?.business_name||'Titiplen.id')+', saya '+(customer?.name||'customer')+' ingin konfirmasi pembayaran invoice '+invoice.invoice_number+' sejumlah '+idr(invoiceBalance(data!,invoice.id))+'. Mohon bantu cek mutasi pembayaran saya. Terima kasih!';
-  return wa?'https://wa.me/'+wa+'?text='+encodeURIComponent(msg):'';
+  return !isDemo&&wa?'https://wa.me/'+wa+'?text='+encodeURIComponent(msg):'';
  };
  return <div className="customer-page"><header className="customer-nav"><div><Link href="/" className="brand-brand"><span className="brand-symbol"><ShoppingBag size={20}/></span>titiplen<span className="brand-dot">.id</span></Link><Link href="/">Beranda <ArrowRight size={13}/></Link></div></header>
  <main className="customer-container">
