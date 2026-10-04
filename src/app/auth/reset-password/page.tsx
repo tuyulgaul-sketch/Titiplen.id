@@ -23,7 +23,7 @@ export default function ResetPasswordPage(){
   }
   return <main className="auth-box">
     <Link className="brand-brand" href="/"><span className="brand-symbol"><ShoppingBag size={20}/></span>Titiplen.id</Link>
-    <div style={{marginTop:24}}><ShieldCheck size={30} color="#358768"/></div>
+    <div style={{marginTop:24}}><ShieldCheck size={30} color="#A04471"/></div>
     <h1>{sent?'Periksa email kamu':'Buat ulang password'}</h1>
     {sent?<><p>Jika email terdaftar, tautan pemulihan sudah diminta. Buka pesan terbaru dari Supabase/Titiplen dan lanjutkan untuk membuat password di situs ini. Jangan bagikan tautan kepada orang lain.</p><Link href="/admin" className="button button-outline" style={{width:'100%'}}>Kembali ke login</Link></>:
     <><p>Khusus akun admin yang sudah diundang. Masukkan email akun kamu agar sistem mengirim tautan untuk membuat password.</p>
