@@ -31,3 +31,14 @@ export function updateSettingsDemo(values:Record<string,unknown>) {
  const data=readDemo();data.settings=[{...data.settings[0],...values}];localStorage.setItem(KEY,JSON.stringify(data));
 }
 export function resetDemo(){localStorage.removeItem(KEY)}
+
+/** Update one demo-only purchase record without mutating billed financial fields. */
+export function updateItemPurchaseDemo(itemId:string){
+  const data=readDemo();
+  const item=data.order_items.find(i=>i.id===itemId);
+  if(!item)throw new Error('Barang tidak ditemukan');
+  if(item.purchase_status!=='planned')throw new Error('Barang ini sudah berstatus dibeli');
+  if(data.invoice_items.some(x=>x.order_item_id===itemId))throw new Error('Barang tertagih tidak dapat diubah');
+  item.purchase_status='purchased';item.purchased_at=new Date().toISOString();
+  localStorage.setItem(KEY,JSON.stringify(data));
+}
