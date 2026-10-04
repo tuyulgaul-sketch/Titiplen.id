@@ -11,6 +11,7 @@ Next.js App Router MVP untuk dua POV: **admin operasional** dan **customer berda
 - Dashboard pendapatan, modal, laba event, overhead, piutang invoice, kas terverifikasi.
 - Input customer dan event; rekap barang per event dan ekspor CSV.
 - Input pesanan banyak barang (modal **per unit**, fee jastip **per unit**, add fee **per unit**, ongkir ditagih **per baris**, ongkir aktual **per baris**, diskon **per baris**).
+- Semua kolom nominal admin otomatis tampil `Rp 1.250.000` saat mengetik atau paste. State dan database tetap menyimpan integer `1250000` (tanpa titik), sehingga perhitungan dan ekspor CSV tetap numerik. Input mengizinkan perbaikan angka di tengah tanpa memindahkan kursor ke akhir.
 - Invoice baru menggabungkan barang satu customer, termasuk lintas-event, tanpa double-billing.
 - Konfirmasi pembayaran QRIS manual setelah admin mencocokkan mutasi, mendukung DP.
 - Catat biaya per event atau biaya umum.
@@ -38,11 +39,16 @@ Next.js App Router MVP untuk dua POV: **admin operasional** dan **customer berda
 
 1. Pada **Supabase project Titiplen saja**, buka SQL Editor dan jalankan supabase/schema.sql, kemudian supabase/002_customer_events_policy.sql dan terakhir supabase/003_security_hardening.sql. Skrip jangan dijalankan pada database PertaLife.
 2. Di Authentication → Providers: aktifkan email/password untuk admin, **Phone Auth + SMS provider** untuk customer. Tanpa penyedia SMS, OTP tidak akan berfungsi. OTP via WhatsApp bukan yang diimplementasikan saat ini.
-3. Daftarkan pengguna email admin di Supabase Auth, lalu melalui SQL Editor project Titiplen jalankan SQL di bawah. Ini harus dilakukan pemilik database dan bukan berdasarkan user_metadata:
+3. Buat akun admin melalui **Supabase Titiplen → Authentication → Users → Add user → Send invitation** (email admin dipilih pemilik bisnis). Minta pemilik email membuka undangan, melengkapi akun, dan memverifikasi email.
+   Setelah akun terdaftar dan email TERKONFIRMASI, pemilik database dapat memberi peran Super Admin melalui SQL Editor project Titiplen berikut. Perintah ini tidak berpengaruh bila email belum dikonfirmasi:
 
     insert into public.admin_users(user_id)
-    select id from auth.users where email = 'EMAIL_ADMIN_ANDA'
+    select id from auth.users
+    where lower(email) = lower('EMAIL_ADMIN_ANDA')
+      and email_confirmed_at is not null
     on conflict do nothing;
+
+   **Jangan bagikan password admin di chat, GitHub, atau source code.** Pendaftaran pengguna via Supabase Auth tidak otomatis menjadi admin tanpa grant eksplisit di atas.
 
 4. Pada deployment Vercel baru khusus Titiplen, isi env berikut (variabel publik tidak boleh berisi credential rahasia):
 
