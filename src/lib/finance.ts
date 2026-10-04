@@ -8,6 +8,7 @@ export function normalizePhone(input:string):string|null {
 }
 export const numeric=(v:unknown)=>Number.isFinite(Number(v))?Number(v):0;
 export function lineSales(item:OrderItem):number {
+  if(typeof item.sale_total==='number' && Number.isFinite(item.sale_total))return item.sale_total;
   return item.quantity*(item.cost_unit+item.fee_unit+item.extra_fee_unit)+item.shipping_charge-item.discount;
 }
 export function lineCost(item:OrderItem):number {
