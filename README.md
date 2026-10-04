@@ -20,6 +20,20 @@ Next.js App Router MVP untuk dua POV: **admin operasional** dan **customer berda
 4. Akun yang sudah diverifikasi dan memiliki password masih memerlukan grant allowlist `admin_users` melalui SQL Editor sesuai instruksi di bawah. Jangan membuat admin dari data `user_metadata`.
 5. Uji login admin dan query Supabase dengan akun tersebut. Layanan SMS OTP untuk customer masih perlu dikonfigurasi sendiri; jangan membuka transaksi riil sebelum pengujian selesai.
 
+## Belanja di Event (mobile / PWA)
+
+**URL:** https://titiplen-id.vercel.app/admin/field (hanya admin yang sudah login).
+
+- Dari Dashboard atau Rekap Barang, klik **Belanja di Event / + Tambah Barang**.
+- Pilih event dan customer. Bisa membuat event dan customer baru tanpa keluar dari halaman.
+- Setiap pembelian langsung disimpan sebagai satu barang di database lewat RPC `create_titiplen_field_entry`, dengan **idempotency key** agar retry setelah jaringan putus tidak menyebabkan barang tercatat dua kali.
+- Status awal **Sudah dibeli** atau **Belum dibeli**. Barang yang masih direncanakan dapat ditandai dibeli dari Rekap Event maupun Rekap Barang.
+- Modal keluar di Rekap Event hanya menghitung barang berstatus Sudah dibeli. Dashboard laba-rugi umum tetap menghitung estimasi margin dari seluruh pesanan (termasuk status planned), bukan kas aktual.
+- Jika koneksi hilang saat formulir masih terbuka, **jangan refresh atau tutup tab**; isian sementara disimpan di sessionStorage **pada tab/perangkat itu saja**, bukan sebagai transaksi. Klik Simpan ketika internet kembali dan pastikan notifikasi berhasil muncul.
+- Tidak ada sinkronisasi transaksi offline otomatis, tidak ada unggah struk/foto pada fase ini.
+- Migrations **004_field_purchase_journal.sql** dan **005_fix_before_update_trigger.sql** sudah diterapkan khusus pada project Supabase Titiplen.
+- Untuk memasang seperti aplikasi: dari Chrome Android pilih Install app / Add to Home Screen, atau dari Safari iPhone pilih Share → Add to Home Screen. `/manifest.webmanifest` membuka mode standalone dengan start_url `/admin/field`; service worker hanya meng-cache aset publik, **tidak** menyimpan transaksi/customer di cache.
+
 ## Lingkup MVP
 
 **Admin (/admin)**
