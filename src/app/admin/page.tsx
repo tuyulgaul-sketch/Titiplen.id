@@ -6,6 +6,7 @@ import type {StoreData,StoreTable} from '@/lib/types';
 import {getBusinessFinance,getEventFinance,idr,invoiceBalance,invoiceItems,invoiceStatus,invoiceTotal,lineProfit,lineSales,nextInvoiceNumber,normalizePhone,paidTotal,shortDate} from '@/lib/finance';
 import {getSupabase,isDemo} from '@/lib/supabase';
 import {insertDemo,readDemo,resetDemo,updateSettingsDemo} from '@/lib/demo';
+import {Money} from '@/components/money-input';
 
 type View='dashboard'|'orders'|'items'|'customers'|'events'|'invoices'|'expenses'|'settings';
 type ItemDraft={brand:string;product_name:string;variant:string;quantity:number;cost_unit:number;fee_unit:number;extra_fee_unit:number;shipping_charge:number;shipping_cost:number;discount:number};
@@ -21,7 +22,7 @@ const tabs:{id:View;label:string;icon:typeof LayoutDashboard}[]=[
 {id:'settings',label:'Pengaturan',icon:Settings2}
 ];
 const today=()=>new Date().toISOString().slice(0,10);
-function Money({value,onChange}:{value:number;onChange:(n:number)=>void}){return <input className="form-input" type="number" min="0" step="1" value={value} onChange={e=>onChange(Math.max(0,Number(e.target.value)||0))}/>;}
+
 function Field({label,children}:{label:string;children:React.ReactNode}){return <label><span className="form-label">{label}</span>{children}</label>}
 function Empty({text}:{text:string}){return <div className="empty-state"><Package size={27}/><strong>Belum ada data</strong><p>{text}</p></div>}
 function Stat({label,value,sub,icon:Icon}:{label:string;value:string;sub:string;icon:typeof Wallet}){return <div className="stat-card"><div className="stat-top"><span className="stat-icon"><Icon size={19}/></span><span className="chip">● Live data</span></div><div className="stat-label">{label}</div><div className="stat-num">{value}</div><div className="stat-foot">{sub}</div></div>}
