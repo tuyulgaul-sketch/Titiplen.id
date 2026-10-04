@@ -2,7 +2,7 @@
 
 Next.js App Router MVP untuk dua POV: **admin operasional** dan **customer berdasarkan nomor HP terverifikasi**.
 
-> ⚠️ **Status:** source MVP sedang disiapkan. BELUM di-deploy / dihubungkan ke Supabase Titiplen. Jangan gunakan untuk transaksi riil sebelum database, OTP, QRIS, dan pengujian siap. Data demo hanya contoh dan tersimpan di localStorage browser.
+> ⚠️ **Status:** source MVP sudah ada di GitHub dan skema sudah terpasang pada project Supabase Titiplen.id (`pukkwituooodcbtdruki`). Belum di-deploy / dikonfigurasikan ke frontend produksi. Jangan gunakan untuk transaksi riil sebelum database, OTP, QRIS, dan pengujian siap. Data demo hanya contoh dan tersimpan di localStorage browser.
 
 ## Lingkup MVP
 
@@ -36,7 +36,7 @@ Next.js App Router MVP untuk dua POV: **admin operasional** dan **customer berda
 
 **Jangan gunakan project** pertalife-marketing-dashboard (Supabase PertaLife) untuk Titiplen.id. Buat akun/organization Supabase baru khusus Titiplen; buat project titiplen-id pada region Singapore (ap-southeast-1). Project lain di organisasi sama juga memisahkan database dan sebagian kuota project, tetapi akun terpisah mengisolasi kepemilikan dan billing lebih jelas.
 
-1. Pada **Supabase project Titiplen saja**, buka SQL Editor dan jalankan supabase/schema.sql, kemudian supabase/002_customer_events_policy.sql. Skrip jangan dijalankan pada database PertaLife.
+1. Pada **Supabase project Titiplen saja**, buka SQL Editor dan jalankan supabase/schema.sql, kemudian supabase/002_customer_events_policy.sql dan terakhir supabase/003_security_hardening.sql. Skrip jangan dijalankan pada database PertaLife.
 2. Di Authentication → Providers: aktifkan email/password untuk admin, **Phone Auth + SMS provider** untuk customer. Tanpa penyedia SMS, OTP tidak akan berfungsi. OTP via WhatsApp bukan yang diimplementasikan saat ini.
 3. Daftarkan pengguna email admin di Supabase Auth, lalu melalui SQL Editor project Titiplen jalankan SQL di bawah. Ini harus dilakukan pemilik database dan bukan berdasarkan user_metadata:
 
@@ -84,6 +84,6 @@ Data Input.xlsx adalah sumber bisnis dan **belum otomatis diimpor**. Jangan lang
 
 ## Keamanan
 
-Database memakai Row Level Security pada seluruh tabel. Admin dibatasi allowlist admin_users; customer boleh SELECT hanya pada invoice dan pesanan milik nomor di JWT Supabase setelah OTP. Tidak ada akses data customer bermodal parameter phone tanpa OTP.
+Database memakai Row Level Security pada seluruh tabel. Admin dibatasi allowlist admin_users. Customer tidak diberi SELECT langsung ke tabel transaksi (terutama modal barang, biaya internal, dan referensi pembayaran). Setelah OTP SMS dan validasi `auth.users.phone_confirmed_at`, customer hanya mengambil proyeksi aman melalui RPC `get_titiplen_customer_portal()` berdasarkan nomor dari JWT: barang, Qty, total harga jual, invoice, saldo, serta QRIS/WA. RPC `SECURITY DEFINER` ini memang diekspos kepada user authenticated agar dapat membaca proyeksi tanpa mendapatkan akses mentah ke tabel; Supabase security linter dapat memperingatkan hal ini, sehingga setiap perubahan perlu diaudit. Nomor HP dari parameter input tidak bisa dipakai untuk mengakses pesanan.
 
 **Jangan** memasukkan data pribadi, kunci rahasia, atau bukti pembayaran ke repository public. Sebaiknya ubah repository ke Private sebelum data operasional.
