@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {ArrowLeft,ArrowRight,BookOpenCheck,Check,CheckCircle2,ChevronDown,Clock3,Cloud,CloudOff,FileText,Home,LayoutDashboard,Package,Plus,ReceiptText,RefreshCw,Save,Search,ShoppingBag,Smartphone,Trash2,UserPlus,Users,WifiOff} from 'lucide-react';
 import {BrandMark} from '@/components/brand-mark';
 import {Money} from '@/components/money-input';
+import {PwaInstall} from '@/components/pwa-install';
 import {readDemo,insertDemo,updateItemPurchaseDemo} from '@/lib/demo';
 import {idr,lineSales,lineProfit,lineCost,normalizePhone,shortDate} from '@/lib/finance';
 import {getSupabase,isDemo} from '@/lib/supabase';
@@ -249,6 +250,7 @@ export default function FieldShoppingPage(){
    </header>
    <main className="field-main">
      <div className="field-top"><div><span className="eyebrow">JURNAL JASTIP • LIVE EVENT</span><h1>Catat sambil belanja <span>♡</span></h1><p>Catat langsung dari HP. Satu barang tersimpan, lanjut ke barang berikutnya.</p></div><img src="/brand/titiplen-logo.webp" width="90" height="90" alt="Maskot Titiplen.id" className="field-mascot"/></div>
+     <PwaInstall/>
      {!online&&<div className="field-offline" role="status"><WifiOff size={18}/> Internet terputus. Draft tetap di layar ini, tetapi belum masuk database.</div>}
      {actionError&&<div className="inline-error" role="alert" style={{marginTop:12}}>{actionError}</div>}
      {notice&&<div className="inline-success" role="status" style={{marginTop:12}}><CheckCircle2 size={17} style={{verticalAlign:'middle',marginRight:7}}/>{notice}</div>}
