@@ -4,7 +4,7 @@ import Link from 'next/link';
 import {ArrowLeft,ArrowRight,CheckCircle2,ChevronRight,Clock3,Download,MessageCircle,Package,Phone,ReceiptText,Search,ShieldCheck,ShoppingBag,Smartphone,Wallet} from 'lucide-react';
 import {getSupabase,isDemo} from '@/lib/supabase';
 import {readDemo} from '@/lib/demo';
-import type {StoreData,StoreTable,Invoice,Customer} from '@/lib/types';
+import type {StoreData,Invoice,Customer} from '@/lib/types';
 import {idr,invoiceBalance,invoiceItems,invoiceStatus,invoiceTotal,lineSales,normalizePhone,paidTotal,shortDate} from '@/lib/finance';
 
 type Stage='phone'|'otp'|'list'|'detail';
@@ -33,18 +33,14 @@ export default function CustomerPage(){
   const sb=getSupabase();
   const {data:{user},error:authError}=await sb.auth.getUser();
   if(authError||!user?.phone||normalizePhone(user.phone)!==verifiedPhone)throw new Error('Verifikasi nomor diperlukan.');
-  const {data:profile,error:profileError}=await sb.from('customers').select('*').eq('phone_e164',verifiedPhone).maybeSingle();
-  if(profileError)throw profileError;
-  if(!profile)throw new Error('Nomor sudah terverifikasi tetapi belum terdaftar sebagai customer. Hubungi admin.');
-  const tables:StoreTable[]=['orders','order_items','events','invoices','invoice_items','payments','expenses','settings'];
-  const all=await Promise.all(tables.map(async(t)=>{
-   // RLS membatasi order, invoice dan payment customer ke nomor HP dari JWT yang SUDAH terverifikasi.
-   const r=await sb.from(t).select('*');
-   if(r.error)throw r.error;
-   return [t,r.data||[]] as const;
-  }));
-  const raw=Object.fromEntries(all) as unknown as Pick<StoreData,'orders'|'order_items'|'events'|'invoices'|'invoice_items'|'payments'|'expenses'|'settings'>;
-  setCustomer(profile as Customer);setData({...raw,customers:[profile as Customer]});setStage('list');
+  // Read a strictly limited, phone-verified projection; never expose purchase costs,
+  // internal notes, or merchant payment references to a customer account.
+  const {data:portal,error:portalError}=await sb.rpc('get_titiplen_customer_portal');
+  if(portalError)throw portalError;
+  const snapshot=portal as StoreData;
+  const profile=snapshot.customers?.[0];
+  if(!profile||profile.phone_e164!==verifiedPhone)throw new Error('Data customer tidak cocok dengan nomor terverifikasi.');
+  setCustomer(profile);setData(snapshot);setStage('list');
  }
  useEffect(()=>{if(isDemo)return;try{getSupabase().auth.getUser().then(({data:{user}})=>{if(user?.phone){const n=normalizePhone(user.phone);if(n){setPhone(n);setNormalized(n);void fetchVerifiedCustomer(n).catch(()=>{setStage('phone');});}}});}catch{}},[]);
  async function submitPhone(e:FormEvent){
