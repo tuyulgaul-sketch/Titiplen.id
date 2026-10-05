@@ -1,4 +1,4 @@
-export type Customer={id:string;name:string;phone_e164:string;created_at?:string};
+export type Customer={id:string;name:string;phone_e164:string;created_at?:string;is_wag_member?:boolean;wag_saved_name?:string|null;wag_last_imported_at?:string|null;name_changed_at?:string|null};
 export type Event={id:string;name:string;event_date:string|null;status:string;created_at?:string};
 export type Order={id:string;customer_id:string;event_id:string|null;created_at:string;notes:string|null;field_entry_key?:string|null};
 export type OrderItem={id:string;order_id:string;brand:string;product_name:string;variant:string;quantity:number;sale_total?:number;purchase_status?:'planned'|'purchased';purchased_at?:string|null;cost_unit:number;fee_unit:number;extra_fee_unit:number;shipping_charge:number;shipping_cost:number;discount:number};
