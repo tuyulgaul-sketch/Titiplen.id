@@ -6,6 +6,7 @@ import {ArrowLeft,ArrowRight,BookOpenCheck,Check,CheckCircle2,ChevronDown,Clock3
 import {BrandMark} from '@/components/brand-mark';
 import {Money} from '@/components/money-input';
 import {PwaInstall} from '@/components/pwa-install';
+import {SearchableSelect} from '@/components/searchable-select';
 import {readDemo,insertDemo,updateItemPurchaseDemo} from '@/lib/demo';
 import {idr,lineSales,lineProfit,lineCost,normalizePhone,shortDate} from '@/lib/finance';
 import {getSupabase,isDemo} from '@/lib/supabase';
@@ -39,7 +40,6 @@ export default function FieldShoppingPage(){
  const [data,setData]=useState<StoreData|null>(null);
  const [eventId,setEventId]=useState('');
  const [customerId,setCustomerId]=useState('');
- const [customerSearch,setCustomerSearch]=useState('');
  const [item,setItem]=useState<ItemDraft>(emptyItem);
  const [notes,setNotes]=useState('');
  const [purchased,setPurchased]=useState(true);
@@ -75,7 +75,7 @@ export default function FieldShoppingPage(){
    if(a.status!==b.status)return a.status==='Aktif'?-1:1;
    return (b.event_date||'').localeCompare(a.event_date||'');
  });
- const customers=(data?.customers||[]).filter(c=>(c.name+' '+c.phone_e164).toLowerCase().includes(customerSearch.toLowerCase())).slice().sort((a,b)=>a.name.localeCompare(b.name,'id'));
+ const customers=(data?.customers||[]).slice().sort((a,b)=>a.name.localeCompare(b.name,'id'));
  const selectedEvent=data?.events.find(e=>e.id===eventId);
  const selectedCustomer=data?.customers.find(c=>c.id===customerId);
 
@@ -156,7 +156,7 @@ export default function FieldShoppingPage(){
     createdId=r.data.id;
    }
    await load();
-   setCustomer(createdId);setCustomerSearch('');
+   setCustomer(createdId);
    setNewCustomer({name:'',phone:''});setShowAddCustomer(false);
    setNotice('Customer ditambahkan. Sekarang lanjut catat barang.');
   }catch(err){setActionError(err instanceof Error?err.message:'Gagal menambah customer.');}
@@ -259,20 +259,22 @@ export default function FieldShoppingPage(){
        <div className="field-context-heading"><span className="field-step">01</span><strong>Pilih event & customer</strong></div>
        <div className="field-grid">
          <Field label="Event jastip">
-           <select className="form-select field-touch" value={eventId} onChange={e=>setEvent(e.target.value)} required>
-             <option value="">Pilih event...</option>
-             {events.map(e=><option key={e.id} value={e.id}>{e.name} · {e.status}</option>)}
-           </select>
-         </Field>
-         <Field label="Cari customer">
-           <div className="field-search-wrap"><Search size={17}/><input className="form-input field-touch" value={customerSearch} onChange={e=>setCustomerSearch(e.target.value)} placeholder="Nama / nomor HP" /></div>
+           <SearchableSelect
+             value={eventId}
+             onChange={setEvent}
+             placeholder="Pilih event..."
+             searchPlaceholder="Ketik nama event..."
+             options={events.map(e=>({value:e.id,label:e.name,meta:e.status+(e.event_date?' · '+e.event_date:'')}))}
+           />
          </Field>
          <Field label="Customer yang dititipkan">
-           <select className="form-select field-touch" value={customerId} onChange={e=>setCustomer(e.target.value)} required>
-             <option value="">{customerSearch?'Pilih hasil pencarian...':'Pilih customer...'}</option>
-             {customers.map(c=><option key={c.id} value={c.id}>{c.name} · {c.phone_e164}</option>)}
-             {selectedCustomer&&!customers.some(c=>c.id===selectedCustomer.id)&&<option value={selectedCustomer.id}>{selectedCustomer.name} (terpilih)</option>}
-           </select>
+           <SearchableSelect
+             value={customerId}
+             onChange={setCustomer}
+             placeholder="Pilih customer..."
+             searchPlaceholder="Ketik nama atau nomor HP..."
+             options={customers.map(c=>({value:c.id,label:c.name,meta:c.phone_e164,searchText:c.phone_e164}))}
+           />
          </Field>
          <div className="field-context-actions">
            <button type="button" className="field-text-action" onClick={()=>{setShowAddCustomer(!showAddCustomer);setShowAddEvent(false);setActionError('');}}><UserPlus size={17}/> Customer baru</button>
