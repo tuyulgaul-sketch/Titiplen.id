@@ -51,6 +51,15 @@ Di `/admin` → **Customer**, admin bisa:
 
 Untuk update berikutnya, gunakan file `.xlsx` yang sama dengan header `phone number` dan `saved name`, atau template CSV yang dapat diunduh dari menu Customer. Upload tidak otomatis terhubung dengan WhatsApp Group: data tetap harus diekspor dan diunggah ulang admin saat ada perubahan anggota.
 
+## Rekap lama JASTIP 2026
+
+- Snapshot historis dari `Data Input.xlsx` sheet `JASTIP 2026` sudah dimuat ke tabel terpisah `legacy_item_imports`: **2.546 baris**, **334 nama lama**, dan **57 label event**.
+- Rekap lama sengaja **tidak** dimasukkan langsung ke `orders/order_items` atau dashboard laba-rugi live karena nilai historis disimpan sebagai total baris dan tidak seluruhnya mengikuti skema harga-per-unit baru.
+- Admin membuka **Rekap Lama** untuk mencari nama lama/barang/event, lalu mencocokkan seluruh kelompok atau satu baris ke customer yang benar. Picker customer dapat dicari berdasarkan **nama atau nomor HP**.
+- Sampai proses pencocokan dilakukan admin, baris historis tetap berstatus belum cocok dan tidak dapat muncul sebagai invoice customer.
+- Dropdown **Customer** dan **Event** pada Input Pesanan, Rekap Barang, Invoice, Pengeluaran, serta Belanja di Event sekarang menggunakan searchable picker. Customer dapat dicari dengan nama/nomor HP; event dengan nama event.
+- File sumber historis dan data pribadi **tidak** disimpan ke repository GitHub publik; hanya skema/migrasi dan kode UI yang berada di repo.
+
 ## Lingkup MVP
 
 **Admin (/admin)**
