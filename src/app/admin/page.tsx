@@ -2,7 +2,7 @@
 import {useEffect,useMemo,useState,type FormEvent} from 'react';
 import Link from 'next/link';
 import {BrandMark} from '@/components/brand-mark';
-import {ArrowRight,BarChart3,CalendarDays,Check,ChevronRight,CircleAlert,ClipboardList,Download,FileText,LayoutDashboard,LogOut,Package,Plus,Receipt,RefreshCw,Save,Search,Settings2,ShoppingBag,Smartphone,Trash2,Users,Wallet} from 'lucide-react';
+import {ArrowRight,BarChart3,CalendarDays,Check,ChevronRight,CircleAlert,ClipboardList,Download,FileText,LayoutDashboard,LogOut,Package,Plus,Receipt,RefreshCw,Save,Search,Settings2,ShoppingBag,Smartphone,Trash2,Users,Wallet,ArchiveRestore} from 'lucide-react';
 import type {StoreData,StoreTable} from '@/lib/types';
 import {getBusinessFinance,getEventFinance,idr,invoiceBalance,invoiceItems,invoiceStatus,invoiceTotal,lineProfit,lineSales,nextInvoiceNumber,normalizePhone,paidTotal,shortDate} from '@/lib/finance';
 import {getSupabase,isDemo} from '@/lib/supabase';
@@ -10,14 +10,16 @@ import {insertDemo,readDemo,resetDemo,updateSettingsDemo,updateItemPurchaseDemo}
 import {Money} from '@/components/money-input';
 import {CustomerDirectory} from '@/components/customer-directory';
 import {SearchableSelect} from '@/components/searchable-select';
+import {LegacyMatcher} from '@/components/legacy-matcher';
 
-type View='dashboard'|'orders'|'items'|'customers'|'events'|'invoices'|'expenses'|'settings';
+type View='dashboard'|'orders'|'items'|'legacy'|'customers'|'events'|'invoices'|'expenses'|'settings';
 type ItemDraft={brand:string;product_name:string;variant:string;quantity:number;cost_unit:number;fee_unit:number;extra_fee_unit:number;shipping_charge:number;shipping_cost:number;discount:number};
 const freshItem=():ItemDraft=>({brand:'',product_name:'',variant:'',quantity:1,cost_unit:0,fee_unit:0,extra_fee_unit:0,shipping_charge:0,shipping_cost:0,discount:0});
 const tabs:{id:View;label:string;icon:typeof LayoutDashboard}[]=[
 {id:'dashboard',label:'Dashboard',icon:LayoutDashboard},
 {id:'orders',label:'Input Pesanan',icon:ClipboardList},
 {id:'items',label:'Rekap Barang',icon:Package},
+{id:'legacy',label:'Rekap Lama',icon:ArchiveRestore},
 {id:'customers',label:'Customer',icon:Users},
 {id:'events',label:'Event Jastip',icon:CalendarDays},
 {id:'invoices',label:'Invoice & Bayar',icon:Receipt},
@@ -180,6 +182,7 @@ export default function AdminPage(){
     <section className="panel-card"><div className="panel-title"><div><h2>Ringkasan keuangan</h2><div className="panel-sub">Penjualan ≠ kas masuk</div></div><Wallet size={19} color="#B74F80"/></div>{[['Total penjualan',report.sales],['Total modal + ongkir aktual',report.cost],['Biaya event & overhead',report.expenses],['Laba keseluruhan',report.profit],['Invoice diterbitkan',report.billed],['Pembayaran terverifikasi',report.collected],['Sisa tagihan customer',report.outstanding]].map(([name,val])=><div className="metric-row" key={name as string}><span>{name}</span><strong>{idr(val as number)}</strong></div>)}<div className="notice" style={{marginTop:18}}>Laporan laba menggunakan seluruh pesanan yang tercatat, termasuk barang yang belum ditagihkan. Gunakan angka piutang dan kas terverifikasi untuk memantau likuiditas.</div></section></div>
     <section className="panel-card"><div className="panel-title"><h2>Invoice terbaru</h2><button className="button button-outline button-small" onClick={()=>setView('invoices')}>Lihat invoice <ArrowRight size={14}/></button></div><div className="table-wrap"><table className="data-table"><thead><tr><th>NO. INVOICE</th><th>CUSTOMER</th><th>TOTAL</th><th>SISA TAGIHAN</th><th>STATUS</th></tr></thead><tbody>{data.invoices.slice().reverse().slice(0,6).map(i=><tr key={i.id}><td><strong>{i.invoice_number}</strong></td><td>{customerNameById(i.customer_id)}</td><td>{idr(invoiceTotal(data,i.id))}</td><td>{idr(invoiceBalance(data,i.id))}</td><td><span className={'pill '+(invoiceStatus(data,i.id)==='Lunas'?'paid':invoiceStatus(data,i.id)==='DP'?'partial':'unpaid')}>{invoiceStatus(data,i.id)}</span></td></tr>)}</tbody></table></div></section>
   </>}
+  {view==='legacy'&&<LegacyMatcher customers={data.customers}/>} 
   {view==='customers'&&<CustomerDirectory data={data} onDataChanged={reload}/>}
   {view==='events'&&<><section className="panel-card"><div className="panel-title"><h2>Event jastip baru</h2></div><form onSubmit={submitEvent} className="form-grid three"><Field label="Nama event"><input className="form-input" required value={eventName} onChange={e=>setEventName(e.target.value)} placeholder="Nama event / bazar"/></Field><Field label="Tanggal"><input className="form-input" type="date" value={eventDate} onChange={e=>setEventDate(e.target.value)}/></Field><Field label="Status"><select className="form-select" value={eventStatus} onChange={e=>setEventStatus(e.target.value)}><option>Aktif</option><option>Selesai</option></select></Field><div className="field-wide form-actions"><button disabled={busy} className="button button-dark"><Plus size={16}/> Buat event</button></div></form></section><section className="panel-card"><div className="panel-title"><h2>Rekap profitabilitas per event</h2><button className="button button-outline button-small" onClick={()=>downloadCsv('titiplen-profit-event.csv',[['Event','Tanggal','Penjualan','Modal+Ongkir Aktual','Biaya Event','Laba','Margin %'],...data.events.map(e=>{const f=getEventFinance(data,e.id);return[e.name,e.event_date||'',f.sales,f.cost,f.expenses,f.profit,f.margin.toFixed(2)];})])}><Download size={16}/> Export CSV</button></div><div className="table-wrap"><table className="data-table"><thead><tr><th>EVENT</th><th>TANGGAL</th><th>OMZET</th><th>MODAL</th><th>BIAYA EVENT</th><th>LABA</th><th>MARGIN</th></tr></thead><tbody>{data.events.map(e=>{const f=getEventFinance(data,e.id);return <tr key={e.id}><td><strong>{e.name}</strong><br/><span className="caption">{e.status}</span></td><td>{shortDate(e.event_date)}</td><td>{idr(f.sales)}</td><td>{idr(f.cost)}</td><td>{idr(f.expenses)}</td><td><strong style={{color:f.profit<0?'#bd5b55':'#25815f'}}>{idr(f.profit)}</strong></td><td>{f.margin.toFixed(1)}%</td></tr>})}</tbody></table></div></section></>}
   {view==='orders'&&<section className="panel-card"><div className="panel-title"><div><h2>Input pesanan baru</h2><div className="panel-sub">Satu pesanan bisa berisi beberapa barang.</div></div><Link href="/admin/field" className="button button-outline button-small"><Smartphone size={16}/> Input cepat HP</Link></div><form onSubmit={submitOrder}>
