@@ -189,3 +189,55 @@
   .field-bottom-nav>a,.field-bottom-nav>button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:transparent;border:0;color:#876577;padding:7px 15px;border-radius:11px;min-width:75px;font-size:10px;font-weight:800}
   .field-bottom-nav>button[aria-current="page"]{background:#F8E2EC;color:#8A325E}
 }
+
+/* Member directory — accessible soft rose, readable on phone and desktop */
+.member-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:18px}
+.member-kpis>div{background:#fff;border:1px solid #EEDCE5;border-radius:15px;padding:16px;display:grid;grid-template-columns:27px 1fr;gap:3px 7px;align-items:center}
+.member-kpis svg{grid-row:1/3;color:#A04471}
+.member-kpis span{color:#795C6C;font-size:11px;font-weight:700}
+.member-kpis strong{color:#572740;font-size:22px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800}
+.member-directory .inline-success{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.bulk-upload-bar,.items-header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.member-preview{border:1px solid #E8CAD9;background:#FFF8FB;border-radius:14px;padding:17px;margin-top:17px}
+.member-preview .panel-title h3{font-size:15px;color:#6B3150;margin:0 0 5px}
+.member-preview-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:15px 0}
+.member-preview-stats>div{background:#fff;border:1px solid #EFDEE6;border-radius:11px;padding:10px 11px;display:grid;gap:5px}
+.member-preview-stats span{font-size:11px;color:#806372}
+.member-preview-stats strong{font-size:23px;font-weight:800;color:#773652}
+.member-bulk-mode{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
+.member-bulk-mode label{display:flex;gap:8px;align-items:flex-start;background:#fff;border:1px solid #E8D8E0;border-radius:12px;padding:12px;cursor:pointer}
+.member-bulk-mode label.selected{background:#FBE7F1;border-color:#C481A4}
+.member-bulk-mode input{accent-color:#9E3E69;flex:none;margin-top:4px}
+.member-bulk-mode strong{display:block;font-size:12px;color:#642C49}
+.member-bulk-mode small{display:block;font-size:11px;color:#77596A;line-height:1.6;margin-top:5px}
+.member-example-table{overflow-x:auto}
+.member-example-table table{width:100%}
+.member-filters{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}
+.member-search{position:relative;flex:1;min-width:220px}
+.member-search svg{position:absolute;left:13px;top:13px;color:#A36D86}
+.member-search input{width:100%;border:1px solid #E7D5DF;background:#fff;border-radius:11px;outline:none;padding:11px 14px 11px 40px;color:#503448;font-size:13px}
+.member-search input:focus{box-shadow:0 0 0 3px #F5DCE8;border-color:#B05E86}
+.member-wag-toggle{display:flex;align-items:center;gap:7px;font-weight:750;color:#745668;font-size:12px;cursor:pointer}
+.member-wag-toggle input{accent-color:#9E3E69;width:16px;height:16px}
+.member-original-name{font-size:10px;color:#8C7281;margin-top:4px;overflow-wrap:anywhere;max-width:320px}
+.member-record-count{font-size:11px;color:#8B6D7E;margin:9px 0}
+.member-pagination{display:flex;align-items:center;justify-content:flex-end;gap:13px;margin-top:16px}
+.member-pagination>span{font-size:12px;color:#795C6C;font-weight:700}
+.member-dialog-backdrop{position:fixed;inset:0;background:#37202BB8;display:flex;justify-content:center;align-items:center;z-index:100;padding:18px}
+.member-rename-dialog{background:#fff;width:min(100%,480px);border-radius:20px;padding:24px;box-shadow:0 18px 80px #3C203A44;display:grid;gap:14px}
+.member-rename-dialog .panel-title{margin-bottom:0}
+.member-rename-dialog .form-input{width:100%;font-size:16px;min-height:48px}
+.member-dialog-phone{font-size:12px;color:#7C6071;margin:0}
+@media(max-width:700px){
+ .member-kpis{gap:7px}
+ .member-kpis>div{grid-template-columns:1fr;padding:12px 8px}
+ .member-kpis svg{grid-row:auto;width:17px;height:17px}
+ .member-kpis span{font-size:10px}
+ .member-kpis strong{font-size:18px}
+ .member-preview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .member-bulk-mode{grid-template-columns:1fr}
+ .member-directory .panel-card>.panel-title{align-items:flex-start;flex-wrap:wrap;gap:12px}
+ .member-search{width:100%;min-width:0}
+ .member-rename-dialog{padding:19px}
+ .member-pagination{justify-content:space-between;gap:6px}
+}
