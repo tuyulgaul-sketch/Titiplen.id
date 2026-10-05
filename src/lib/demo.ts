@@ -42,3 +42,36 @@ export function updateItemPurchaseDemo(itemId:string){
   item.purchase_status='purchased';item.purchased_at=new Date().toISOString();
   localStorage.setItem(KEY,JSON.stringify(data));
 }
+
+/** Simulate a safe batch import in the browser demo, keyed on E.164 phone. */
+export function upsertWagMembersDemo(members:{phone:string;name:string;saved_name?:string}[],overwriteNames:boolean){
+ const data=readDemo();
+ const stats={added:0,renamed:0,unchanged:0,processed:members.length};
+ for(const member of members){
+  const customer=data.customers.find(c=>c.phone_e164===member.phone);
+  if(customer){
+   if(overwriteNames && customer.name!==member.name){
+    customer.name=member.name;customer.name_changed_at=new Date().toISOString();
+    stats.renamed++;
+   }else stats.unchanged++;
+   customer.is_wag_member=true;customer.wag_saved_name=member.saved_name||customer.wag_saved_name||null;
+   customer.wag_last_imported_at=new Date().toISOString();
+  }else{
+   data.customers.push({
+    id:crypto.randomUUID(),name:member.name,phone_e164:member.phone,
+    is_wag_member:true,wag_saved_name:member.saved_name||null,
+    wag_last_imported_at:new Date().toISOString(),created_at:new Date().toISOString()
+   });
+   stats.added++;
+  }
+ }
+ localStorage.setItem(KEY,JSON.stringify(data));
+ return stats;
+}
+export function renameCustomerDemo(id:string,name:string){
+ const data=readDemo();
+ const customer=data.customers.find(c=>c.id===id);
+ if(!customer)throw new Error('Member tidak ditemukan');
+ customer.name=name;customer.name_changed_at=new Date().toISOString();
+ localStorage.setItem(KEY,JSON.stringify(data));
+}
