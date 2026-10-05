@@ -34,6 +34,23 @@ Next.js App Router MVP untuk dua POV: **admin operasional** dan **customer berda
 - Migrations **004_field_purchase_journal.sql** dan **005_fix_before_update_trigger.sql** sudah diterapkan khusus pada project Supabase Titiplen.
 - Untuk memasang seperti aplikasi: dari Chrome Android pilih Install app / Add to Home Screen, atau dari Safari iPhone pilih Share → Add to Home Screen. `/manifest.webmanifest` membuka mode standalone dengan start_url `/admin/field`; service worker hanya meng-cache aset publik, **tidak** menyimpan transaksi/customer di cache.
 
+## Daftar member WAG dan pengelolaan nama
+
+Di `/admin` → **Customer**, admin bisa:
+
+- Melihat dan mencari customer menggunakan nama atau nomor HP, mengaktifkan filter **Member WAG saja**, membuka daftar 40 orang per halaman, dan mengekspor CSV tanpa formula injection.
+- Menambah member **satu per satu** melalui form nama dan nomor WhatsApp. Nomor divalidasi dan dinormalisasi menjadi format `+62…`; nomor unik di Supabase.
+- Klik **Rename** pada member untuk mengubah `customers.name` saja. Identitas UUID, nomor HP, pesanan, dan invoice tidak ikut berubah.
+- Memilih **Upload Excel / CSV**, melihat pratinjau, konflik nomor, data tanpa nama, lalu menentukan:
+  1. **Tambah nomor baru saja** (default): jika nomor sudah ada, jangan ganti nama yang pernah diedit admin;
+  2. **Tambah & update nama**: update nama existing hanya bila file berisi nama yang jelas. Jika nama dalam file hanya berupa nomor telepon atau terlalu pendek, nama existing **tidak** ditimpa.
+- Upload memproses 150 baris per batch (maksimal 5.000 nomor per file), memanggil RPC `upsert_titiplen_wag_members` yang dibatasi untuk admin melalui RLS. Jika koneksi gagal setelah beberapa batch, admin boleh meng-upload file yang sama: upsert berdasarkan nomor HP mencegah duplikasi.
+- Nama sumber yang diketik oleh pengelola daftar disimpan di kolom `wag_saved_name` untuk referensi internal; portal customer hanya menerima proyeksi aman dan **tidak** melihat label kontak tersebut.
+
+**Impor awal 5 Oktober 2026:** 424 nomor valid dan unik sudah diimpor hanya ke Supabase project Titiplen `pukkwituooodcbtdruki`. Sebanyak 311 entri menggunakan label sementara `Member ####` karena nama pada Excel awal berupa nomor telepon atau satu karakter. Import awal **tidak** mengubah nama existing dan **tidak** menyimpan file Excel maupun daftar kontak dalam repository GitHub publik. Arsip Excel tetap disimpan oleh pemilik file di tempat yang sesuai kebijakan privasi.
+
+Untuk update berikutnya, gunakan file `.xlsx` yang sama dengan header `phone number` dan `saved name`, atau template CSV yang dapat diunduh dari menu Customer. Upload tidak otomatis terhubung dengan WhatsApp Group: data tetap harus diekspor dan diunggah ulang admin saat ada perubahan anggota.
+
 ## Lingkup MVP
 
 **Admin (/admin)**
