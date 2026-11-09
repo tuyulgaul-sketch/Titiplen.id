@@ -177,3 +177,18 @@ Modul baru **terpisah** dari pencatatan jastip dan invoice lama.
 6. Untuk publik skala lebih besar, rekomendasi berikutnya: tambahkan CAPTCHA/Turnstile, monitoring penyalahgunaan form, serta proses retensi foto dan data nomor HP.
 
 **Privasi:** nomor WA adalah data kontak, **bukan** kredensial autentikasi. Customer tidak dapat mengambil invoice orang lain hanya dengan mengetikkan nomor HP. Link token invoice adalah bearer credential; siapa pun yang mempunyai link dapat melihat invoice tersebut. Riwayat browser hanya tersimpan di perangkat itu dan hilang jika data browser dihapus. Data order/admin hanya dapat diakses admin yang diotorisasi. Modul \`/cek-invoice\` lama tetap ada untuk histori lama yang memakai OTP; modul baru tidak menggunakannya.
+
+
+### Invoice Saya tanpa OTP + pilihan pengiriman (update lanjutan, 9 Nov 2026)
+
+- Customer buka \`/pesanan\`, mengisi **nomor WhatsApp saja**. Tidak ada akun dan tidak ada OTP.
+- Endpoint Supabase Edge Function \`jastip-invoices\` (POST JSON) menerima \`action: "lookup"\` dan mengembalikan invoice **dikelompokkan satu per (event_id, phone_e164)**. Pengiriman tidak disertai dalam hasil lookup selain status/metode; nama dan **alamat penerima tidak pernah di-return**.
+- Jika customer mengirim beberapa purchase order di event yang sama, halaman invoice menampilkan seluruh item sebagai satu invoice event, menggunakan \`jastip_open_event_invoices\`. Pesanan di event berbeda tampil sebagai invoice berbeda.
+- Customer boleh memilih pengiriman hanya jika semua item dalam invoice sudah dikonfirmasi admin dan ada minimal satu item didapat:
+  - **Checkout Shopee:** mencatat pengajuan metode Shopee; admin bisa mengisi URL resmi Shopee.co.id per event. Ini link yang diinput admin, **bukan** checkout API otomatis.
+  - **Kirim Manual:** wajib isi nama penerima, nomor HP, alamat lengkap; data tidak muncul pada endpoint publik. Data pribadi hanya bisa dibaca admin yang login.
+- Pengajuan disimpan **append-only** pada \`jastip_open_delivery_requests\` dengan status \`pending_review\`. Admin buka tab **Pengiriman** pada \`/admin/open-order\` dan mengonfirmasi identitas melalui WhatsApp sebelum mengubah status \`approved\`, atau menolak.
+- Mitigasi akses publik tanpa OTP: limit pencarian per IP maks. 20/jam; permintaan pengiriman 10/jam/IP serta maks. 5 pengajuan/invoice/24 jam; tanpa data alamat dan nama penerima di lookup; maksimal satu pengajuan berstatus \`approved\` per invoice. **Risiko residual tetap ada:** siapa pun yang mengetahui nomor WA dapat melihat daftar barang dan total invoice. Jangan menganggap nomor HP sebagai autentikasi.
+- Database migrations: \`011_event_invoices_delivery.sql\` dan \`012_one_approved_delivery.sql\`; keduanya sudah diterapkan khusus pada Supabase Titiplen. Edge Function \`jastip-invoices\` sudah dideploy dengan \`verify_jwt=false\`.
+- Production masih harus melalui uji manual end-to-end: order dengan foto, pengelompokan 2 event, update item oleh admin, pilihan Shopee/manual, review WhatsApp, dan tampilan dari perangkat lain.
+
