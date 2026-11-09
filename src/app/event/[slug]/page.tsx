@@ -64,6 +64,7 @@ export default function PublicEventPage(){
    const result=await response.json();
    if(!response.ok||!result.token)throw new Error(result.error||'Gagal mengirim pesanan');
    try{
+    sessionStorage.setItem('titiplen.last.order.phone',phone.trim());
     const storageKey='titiplen.open.receipts.v1';
     const existing=JSON.parse(localStorage.getItem(storageKey)||'[]') as {token:string}[];
     const saved=[{token:result.token,invoice_number:result.invoice_number,event_name:event?.name||'',created_at:new Date().toISOString()},...existing.filter(x=>x.token!==result.token)].slice(0,40);
