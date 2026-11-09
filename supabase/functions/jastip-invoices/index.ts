@@ -60,7 +60,9 @@ async function invoiceData(normalizedPhone:string,onlyGroup?:InvoiceGroup){
  const orders=(ordersResult.data||[]) as SubmittedOrder[];
  const latest=new Map<string,{method:string;status:string}>();
  for(const req of deliveryResult.data||[]){
-   if(!latest.has(req.invoice_id))latest.set(req.invoice_id,{method:req.method,status:req.status});
+   const previous=latest.get(req.invoice_id);
+   if(!previous||(req.status==='approved'&&previous.status!=='approved'))
+     latest.set(req.invoice_id,{method:req.method,status:req.status});
  }
  return list.map(g=>{
    const event=evs.find(e=>e.id===g.event_id);
