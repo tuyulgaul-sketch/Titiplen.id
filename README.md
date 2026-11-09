@@ -149,3 +149,46 @@ Data Input.xlsx adalah sumber bisnis dan **belum otomatis diimpor**. Jangan lang
 Database memakai Row Level Security pada seluruh tabel. Admin dibatasi allowlist admin_users. Customer tidak diberi SELECT langsung ke tabel transaksi (terutama modal barang, biaya internal, dan referensi pembayaran). Setelah OTP SMS dan validasi `auth.users.phone_confirmed_at`, customer hanya mengambil proyeksi aman melalui RPC `get_titiplen_customer_portal()` berdasarkan nomor dari JWT: barang, Qty, total harga jual, invoice, saldo, serta QRIS/WA. RPC `SECURITY DEFINER` ini memang diekspos kepada user authenticated agar dapat membaca proyeksi tanpa mendapatkan akses mentah ke tabel; Supabase security linter dapat memperingatkan hal ini, sehingga setiap perubahan perlu diaudit. Nomor HP dari parameter input tidak bisa dipakai untuk mengakses pesanan.
 
 **Jangan** memasukkan data pribadi, kunci rahasia, atau bukti pembayaran ke repository public. Sebaiknya ubah repository ke Private sebelum data operasional.
+
+
+---
+
+## Open Order Event (tanpa login customer) — November 2026
+
+Modul baru **terpisah** dari pencatatan jastip dan invoice lama.
+
+**Halaman:**
+- \`/event\` — daftar event yang membuka order.
+- \`/event/[slug]\` — form publik: nama, nomor WhatsApp, satu hingga delapan barang, varian, jumlah, catatan, dan screenshot **wajib per barang**.
+- \`/admin/open-order\` — admin login dengan akun Supabase Auth yang sudah di-allowlist di \`admin_users\`, buat/tutup event, share link, melihat purchase order secara langsung, serta menyimpan status barang dan harga final per pcs.
+- \`/pesanan/[token]\` — invoice tanpa login menggunakan link acak yang harus dijaga privasinya. Link otomatis diberikan setelah submit.
+- \`/pesanan\` — riwayat link invoice khusus browser/perangkat yang sama (localStorage, bukan identitas WhatsApp).
+
+**Status dan aritmetika:** \`pending\` = menunggu konfirmasi (Rp0 sementara), \`found\` = berhasil dibeli (jumlah × harga final per pcs), \`not_found\` = barang tidak berhasil didapat (tetap ditampilkan di invoice dengan Rp0). Invoice final setelah seluruh item terkonfirmasi. Ini adalah invoice **dinamis**, belum dilengkapi payment reconciliation atau kunci finalisasi.
+
+**Realtime:** dashboard admin subscribe ke PostgreSQL Changes untuk \`jastip_open_orders\` dan \`jastip_open_order_items\`; ada fallback refresh tiap 20 detik. Halaman invoice customer polling tiap 15 detik saat aktif. Foto referensi tersimpan di bucket privat dan ditampilkan ke admin menggunakan signed URL. Batas 3 MB per gambar, 12 MB seluruh permintaan.
+
+**Pasang / verifikasi:**
+1. Terapkan \`supabase/010_open_order_no_login.sql\` di Supabase **Titiplen** saja (jangan di project PertaLife). Migration \`open_order_no_login_20261109\` telah dijalankan pada project \`pukkwituooodcbtdruki\`.
+2. Deploy \`supabase/functions/jastip-public/index.ts\` sebagai Edge Function \`jastip-public\` dengan \`verify_jwt = false\`; function ini memvalidasi unggahan, memakai service-role **hanya di server**, dan menerapkan limit per IP per jam. Sudah dipasang pada project Titiplen (versi 2).
+3. Pastikan environment variables **publishable** \`NEXT_PUBLIC_SUPABASE_URL\` dan \`NEXT_PUBLIC_SUPABASE_ANON_KEY\` mengarah ke project Titiplen. Jangan pernah mengirim service role ke browser.
+4. Login menggunakan admin yang sudah terdaftar pada \`admin_users\`, buat event baru dari \`/admin/open-order\`, dan bagikan URL event. Tidak perlu konfigurasi customer OTP untuk modul baru.
+5. Tes satu order sungguhan dengan gambar kecil, konfirmasi masing-masing item termasuk \`not_found\`, dan pastikan total invoice. Setelah itu uji dari dua perangkat untuk memvalidasi realtime dan hak akses.
+6. Untuk publik skala lebih besar, rekomendasi berikutnya: tambahkan CAPTCHA/Turnstile, monitoring penyalahgunaan form, serta proses retensi foto dan data nomor HP.
+
+**Privasi:** nomor WA adalah data kontak, **bukan** kredensial autentikasi. Customer tidak dapat mengambil invoice orang lain hanya dengan mengetikkan nomor HP. Link token invoice adalah bearer credential; siapa pun yang mempunyai link dapat melihat invoice tersebut. Riwayat browser hanya tersimpan di perangkat itu dan hilang jika data browser dihapus. Data order/admin hanya dapat diakses admin yang diotorisasi. Modul \`/cek-invoice\` lama tetap ada untuk histori lama yang memakai OTP; modul baru tidak menggunakannya.
+
+
+### Invoice Saya tanpa OTP + pilihan pengiriman (update lanjutan, 9 Nov 2026)
+
+- Customer buka \`/pesanan\`, mengisi **nomor WhatsApp saja**. Tidak ada akun dan tidak ada OTP.
+- Endpoint Supabase Edge Function \`jastip-invoices\` (POST JSON) menerima \`action: "lookup"\` dan mengembalikan invoice **dikelompokkan satu per (event_id, phone_e164)**. Pengiriman tidak disertai dalam hasil lookup selain status/metode; nama dan **alamat penerima tidak pernah di-return**.
+- Jika customer mengirim beberapa purchase order di event yang sama, halaman invoice menampilkan seluruh item sebagai satu invoice event, menggunakan \`jastip_open_event_invoices\`. Pesanan di event berbeda tampil sebagai invoice berbeda.
+- Customer boleh memilih pengiriman hanya jika semua item dalam invoice sudah dikonfirmasi admin dan ada minimal satu item didapat:
+  - **Checkout Shopee:** mencatat pengajuan metode Shopee; admin bisa mengisi URL resmi Shopee.co.id per event. Ini link yang diinput admin, **bukan** checkout API otomatis.
+  - **Kirim Manual:** wajib isi nama penerima, nomor HP, alamat lengkap; data tidak muncul pada endpoint publik. Data pribadi hanya bisa dibaca admin yang login.
+- Pengajuan disimpan **append-only** pada \`jastip_open_delivery_requests\` dengan status \`pending_review\`. Admin buka tab **Pengiriman** pada \`/admin/open-order\` dan mengonfirmasi identitas melalui WhatsApp sebelum mengubah status \`approved\`, atau menolak.
+- Mitigasi akses publik tanpa OTP: limit pencarian per IP maks. 20/jam; permintaan pengiriman 10/jam/IP serta maks. 5 pengajuan/invoice/24 jam; tanpa data alamat dan nama penerima di lookup; maksimal satu pengajuan berstatus \`approved\` per invoice. **Risiko residual tetap ada:** siapa pun yang mengetahui nomor WA dapat melihat daftar barang dan total invoice. Jangan menganggap nomor HP sebagai autentikasi.
+- Database migrations: \`011_event_invoices_delivery.sql\` dan \`012_one_approved_delivery.sql\`; keduanya sudah diterapkan khusus pada Supabase Titiplen. Edge Function \`jastip-invoices\` sudah dideploy dengan \`verify_jwt=false\`.
+- Production masih harus melalui uji manual end-to-end: order dengan foto, pengelompokan 2 event, update item oleh admin, pilihan Shopee/manual, review WhatsApp, dan tampilan dari perangkat lain.
+
