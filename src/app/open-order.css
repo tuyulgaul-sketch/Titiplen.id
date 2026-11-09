@@ -1,0 +1,50 @@
+.oo-page{min-height:100vh;background:linear-gradient(155deg,#fff6fa,#fff 48%,#fff4f6);color:#392536;font-family:inherit}
+.oo-shell{max-width:1110px;margin:auto;padding:24px 18px 70px}
+.oo-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.oo-brand{font-weight:900;color:#ae3472;font-size:25px;letter-spacing:-1px;text-decoration:none}
+.oo-brand small{font-size:12px;font-weight:500;display:block;letter-spacing:0;color:#92758a}
+.oo-back{font-size:13px;color:#8a4269;text-decoration:none}
+.oo-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.oo-card{background:white;border:1px solid #f0dce6;border-radius:20px;padding:22px;box-shadow:0 10px 35px #b3508011}
+.oo-card+.oo-card{margin-top:16px}
+.oo-card h2{font-size:19px;line-height:1.3;font-weight:800;margin:0 0 9px}
+.oo-card h3{font-size:15px;font-weight:800;margin:0 0 10px}
+.oo-muted{color:#887282;font-size:13px;line-height:1.6}
+.oo-label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}
+.oo-input{border:1px solid #e7d4df;border-radius:11px;width:100%;padding:11px 12px;font-size:14px;min-height:44px;color:#362436;background:white;outline-color:#bc5189}
+.oo-input:focus{border-color:#ba598e}
+.oo-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.oo-between{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.oo-button{border-radius:12px;border:1px solid #dcaac5;padding:11px 16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:13px;cursor:pointer;background:white;color:#a33171;text-decoration:none;min-height:42px}
+.oo-button.main{background:#ae3472;color:white;border-color:#ae3472}
+.oo-button:disabled{opacity:.55;cursor:not-allowed}
+.oo-pill{display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:750;background:#fff0f5;color:#ad366f}
+.oo-pill.pending{background:#fff3df;color:#9c6412}
+.oo-pill.found{background:#e7f8ee;color:#25734e}
+.oo-pill.not_found{background:#fbe5e6;color:#ab3847}
+.oo-item{border:1px solid #ead9e2;border-radius:14px;padding:16px;margin-top:12px;background:#fffdfd}
+.oo-title{font-size:28px;line-height:1.25;font-weight:900;letter-spacing:-.8px;margin:6px 0 8px}
+.oo-small{font-size:12px}
+.oo-message{padding:12px 14px;border-radius:12px;font-size:13px;margin:12px 0}
+.oo-message.error{background:#ffeded;color:#9b293a;border:1px solid #f9cbd1}
+.oo-message.success{background:#e8f7ef;color:#226646;border:1px solid #c3ead3}
+.oo-message.info{background:#fff2f8;color:#8c3d6e;border:1px solid #f5d0e4}
+.oo-file{border:1px dashed #d9a5c1;border-radius:12px;padding:12px;background:#fff8fb}
+.oo-file img{margin-top:10px;width:125px;height:125px;object-fit:cover;border-radius:11px}
+.oo-section{margin-top:24px}
+.oo-summary{background:#fff4f8;border-radius:14px;padding:14px 16px}
+.oo-money{font-size:23px;font-weight:900;color:#a93272}
+.oo-orders{display:flex;flex-direction:column;gap:14px;margin-top:16px}
+.oo-invoice-line{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #f0e3e9}
+.oo-invoice-line:last-child{border:0}
+.oo-image{object-fit:cover;border-radius:12px;width:85px;height:85px;background:#ffeff5}
+.oo-counter{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:999px;font-size:12px;background:#f8e3ed;color:#9d2c67}
+.oo-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.oo-tabs button{border:1px solid #e2bdcf;border-radius:12px;background:white;padding:9px 13px;color:#9a4370;font-size:13px;font-weight:700}
+.oo-tabs button.active{background:#ae3472;color:white;border-color:#ae3472}
+.oo-order-head{border-bottom:1px solid #f1e5eb;padding-bottom:12px;margin-bottom:12px}
+.oo-order-items{display:grid;gap:10px}
+.oo-item-main{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px}
+.oo-status-panel{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.oo-status-panel .full{grid-column:1/-1}
+@media(max-width:700px){.oo-shell{padding:16px 12px 50px}.oo-grid{grid-template-columns:1fr}.oo-card{padding:16px;border-radius:17px}.oo-title{font-size:24px}.oo-item-main{grid-template-columns:65px minmax(0,1fr)}.oo-image{height:65px;width:65px}}
