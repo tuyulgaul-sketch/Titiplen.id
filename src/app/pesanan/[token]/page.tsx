@@ -65,7 +65,8 @@ export default function ReceiptPage(){
      <div className="oo-muted">Barang belum didapat / tidak didapat otomatis bernilai Rp0.</div>
     </div>
     <div className="oo-row" style={{marginTop:18}}>
-     <button type="button" className="oo-button main" onClick={()=>void copy()}><Copy size={16}/>{copied?'Link disalin':'Salin link invoice'}</button>
+     <Link href="/pesanan" className="oo-button main"><ReceiptText size={16}/> Cek invoice & pilih pengiriman</Link>
+     <button type="button" className="oo-button" onClick={()=>void copy()}><Copy size={16}/>{copied?'Link disalin':'Salin link invoice'}</button>
      <button type="button" className="oo-button" onClick={()=>void reload()}><RefreshCw size={16}/> Perbarui status</button>
     </div>
     {error&&<div className="oo-message error">{error}</div>}
