@@ -83,6 +83,9 @@ Deno.serve(async(req:Request)=>{
     files.push({path,file,bytes});
     parsed.push({product_name,variant,notes,quantity,image_path:path});
   }
+  if(files.reduce((n,f)=>n+f.bytes.byteLength,0)>12582912)return respond({error:'Total ukuran gambar maksimal 12 MB'},400);
+  const duplicate=await sb.from('jastip_open_orders').select('access_token,invoice_number').eq('client_key',clientKey).maybeSingle();
+  if(duplicate.data)return respond({ok:true,invoice_number:duplicate.data.invoice_number,token:duplicate.data.access_token},201);
   const {data:ev,error:evError}=await sb.from('events').select('id')
     .eq('open_order_slug',slug).eq('open_order_enabled',true).eq('status','Aktif').maybeSingle();
   if(evError)throw evError;
@@ -112,7 +115,9 @@ Deno.serve(async(req:Request)=>{
     p_phone_e164:phone,p_items:parsed,p_ip_fingerprint:fingerprint
   });
   if(error){
-   // Do not remove files on ambiguous network errors: a committed order may refer to them.
+   // Only remove newly uploaded photos if we can prove no order was committed.
+   const recorded=await sb.from('jastip_open_orders').select('id').eq('client_key',clientKey).maybeSingle();
+   if(!recorded.error&&!recorded.data&&uploaded.length)await sb.storage.from('jastip-references').remove(uploaded);
    return respond({error:error.message.includes('Terlalu banyak')?'Terlalu banyak permintaan. Coba lagi nanti.':'Gagal menyimpan pesanan. Coba kembali.'},error.message.includes('Terlalu banyak')?429:422);
   }
   return respond({ok:true,invoice_number:data.invoice_number,token:data.token},201);
