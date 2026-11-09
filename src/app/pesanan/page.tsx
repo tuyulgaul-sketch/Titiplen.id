@@ -103,7 +103,8 @@ export default function MyOrders(){
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState('');
  const [searched,setSearched]=useState(false);
- useEffect(()=>{try{const v=JSON.parse(localStorage.getItem('titiplen.open.receipts.v1')||'[]');if(Array.isArray(v))setSaved(v.filter(x=>x&&typeof x.token==='string'));}catch{}},[]);
+ useEffect(()=>{try{setPhone(sessionStorage.getItem('titiplen.last.order.phone')||'');}catch{}
+  try{const v=JSON.parse(localStorage.getItem('titiplen.open.receipts.v1')||'[]');if(Array.isArray(v))setSaved(v.filter(x=>x&&typeof x.token==='string'));}catch{}},[]);
  async function lookup(value:string){
   setBusy(true);setError('');
   try{const result=await request({action:'lookup',phone:value,website:''});
