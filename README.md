@@ -149,3 +149,31 @@ Data Input.xlsx adalah sumber bisnis dan **belum otomatis diimpor**. Jangan lang
 Database memakai Row Level Security pada seluruh tabel. Admin dibatasi allowlist admin_users. Customer tidak diberi SELECT langsung ke tabel transaksi (terutama modal barang, biaya internal, dan referensi pembayaran). Setelah OTP SMS dan validasi `auth.users.phone_confirmed_at`, customer hanya mengambil proyeksi aman melalui RPC `get_titiplen_customer_portal()` berdasarkan nomor dari JWT: barang, Qty, total harga jual, invoice, saldo, serta QRIS/WA. RPC `SECURITY DEFINER` ini memang diekspos kepada user authenticated agar dapat membaca proyeksi tanpa mendapatkan akses mentah ke tabel; Supabase security linter dapat memperingatkan hal ini, sehingga setiap perubahan perlu diaudit. Nomor HP dari parameter input tidak bisa dipakai untuk mengakses pesanan.
 
 **Jangan** memasukkan data pribadi, kunci rahasia, atau bukti pembayaran ke repository public. Sebaiknya ubah repository ke Private sebelum data operasional.
+
+
+---
+
+## Open Order Event (tanpa login customer) — November 2026
+
+Modul baru **terpisah** dari pencatatan jastip dan invoice lama.
+
+**Halaman:**
+- \`/event\` — daftar event yang membuka order.
+- \`/event/[slug]\` — form publik: nama, nomor WhatsApp, satu hingga delapan barang, varian, jumlah, catatan, dan screenshot **wajib per barang**.
+- \`/admin/open-order\` — admin login dengan akun Supabase Auth yang sudah di-allowlist di \`admin_users\`, buat/tutup event, share link, melihat purchase order secara langsung, serta menyimpan status barang dan harga final per pcs.
+- \`/pesanan/[token]\` — invoice tanpa login menggunakan link acak yang harus dijaga privasinya. Link otomatis diberikan setelah submit.
+- \`/pesanan\` — riwayat link invoice khusus browser/perangkat yang sama (localStorage, bukan identitas WhatsApp).
+
+**Status dan aritmetika:** \`pending\` = menunggu konfirmasi (Rp0 sementara), \`found\` = berhasil dibeli (jumlah × harga final per pcs), \`not_found\` = barang tidak berhasil didapat (tetap ditampilkan di invoice dengan Rp0). Invoice final setelah seluruh item terkonfirmasi. Ini adalah invoice **dinamis**, belum dilengkapi payment reconciliation atau kunci finalisasi.
+
+**Realtime:** dashboard admin subscribe ke PostgreSQL Changes untuk \`jastip_open_orders\` dan \`jastip_open_order_items\`; ada fallback refresh tiap 20 detik. Halaman invoice customer polling tiap 15 detik saat aktif. Foto referensi tersimpan di bucket privat dan ditampilkan ke admin menggunakan signed URL. Batas 3 MB per gambar, 12 MB seluruh permintaan.
+
+**Pasang / verifikasi:**
+1. Terapkan \`supabase/010_open_order_no_login.sql\` di Supabase **Titiplen** saja (jangan di project PertaLife). Migration \`open_order_no_login_20261109\` telah dijalankan pada project \`pukkwituooodcbtdruki\`.
+2. Deploy \`supabase/functions/jastip-public/index.ts\` sebagai Edge Function \`jastip-public\` dengan \`verify_jwt = false\`; function ini memvalidasi unggahan, memakai service-role **hanya di server**, dan menerapkan limit per IP per jam. Sudah dipasang pada project Titiplen (versi 2).
+3. Pastikan environment variables **publishable** \`NEXT_PUBLIC_SUPABASE_URL\` dan \`NEXT_PUBLIC_SUPABASE_ANON_KEY\` mengarah ke project Titiplen. Jangan pernah mengirim service role ke browser.
+4. Login menggunakan admin yang sudah terdaftar pada \`admin_users\`, buat event baru dari \`/admin/open-order\`, dan bagikan URL event. Tidak perlu konfigurasi customer OTP untuk modul baru.
+5. Tes satu order sungguhan dengan gambar kecil, konfirmasi masing-masing item termasuk \`not_found\`, dan pastikan total invoice. Setelah itu uji dari dua perangkat untuk memvalidasi realtime dan hak akses.
+6. Untuk publik skala lebih besar, rekomendasi berikutnya: tambahkan CAPTCHA/Turnstile, monitoring penyalahgunaan form, serta proses retensi foto dan data nomor HP.
+
+**Privasi:** nomor WA adalah data kontak, **bukan** kredensial autentikasi. Customer tidak dapat mengambil invoice orang lain hanya dengan mengetikkan nomor HP. Link token invoice adalah bearer credential; siapa pun yang mempunyai link dapat melihat invoice tersebut. Riwayat browser hanya tersimpan di perangkat itu dan hilang jika data browser dihapus. Data order/admin hanya dapat diakses admin yang diotorisasi. Modul \`/cek-invoice\` lama tetap ada untuk histori lama yang memakai OTP; modul baru tidak menggunakannya.
