@@ -41,6 +41,7 @@ export default function PublicEventPage(){
   if(!lines.every(i=>i.file&&i.product_name.trim().length>=2)){
    setError('Setiap barang wajib punya nama dan foto/screenshot.');return;
   }
+  if(lines.reduce((n,i)=>n+(i.file?.size||0),0)>12582912){setError('Total semua gambar maksimal 12 MB. Kompres gambar terlebih dahulu.');return;}
   if(!requestKey.current)requestKey.current=crypto.randomUUID();
   setBusy(true);
   try{
@@ -62,6 +63,12 @@ export default function PublicEventPage(){
    });
    const result=await response.json();
    if(!response.ok||!result.token)throw new Error(result.error||'Gagal mengirim pesanan');
+   try{
+    const storageKey='titiplen.open.receipts.v1';
+    const existing=JSON.parse(localStorage.getItem(storageKey)||'[]') as {token:string}[];
+    const saved=[{token:result.token,invoice_number:result.invoice_number,event_name:event?.name||'',created_at:new Date().toISOString()},...existing.filter(x=>x.token!==result.token)].slice(0,40);
+    localStorage.setItem(storageKey,JSON.stringify(saved));
+   }catch{ /* Device storage is optional; the direct invoice URL still works. */ }
    router.push('/pesanan/'+encodeURIComponent(result.token));
   }catch(err){setError(err instanceof Error?err.message:'Gagal mengirim pesanan. Coba lagi.');}
   finally{setBusy(false);}
