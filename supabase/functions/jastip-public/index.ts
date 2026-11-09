@@ -33,17 +33,25 @@ Deno.serve(async(req:Request)=>{
    const token=new URL(req.url).searchParams.get('token')||'';
    if(!uuid.test(token))return respond({error:'Link invoice tidak valid'},400);
    const {data:order,error}=await sb.from('jastip_open_orders')
-    .select('invoice_number,customer_name,created_at,event_id,jastip_open_order_items(id,product_name,variant,notes,quantity,status,final_unit_price,admin_note)')
+    .select('invoice_number,customer_name,phone_e164,created_at,event_id')
     .eq('access_token',token).maybeSingle();
    if(error)throw error;
    if(!order)return respond({error:'Invoice tidak ditemukan'},404);
-   const ev=await sb.from('events').select('name').eq('id',order.event_id).maybeSingle();
-   const items=(order.jastip_open_order_items||[]).map((item)=>{
+   const [groupResult,ordersResult,eventResult]=await Promise.all([
+    sb.from('jastip_open_event_invoices').select('invoice_number,created_at')
+      .eq('event_id',order.event_id).eq('phone_e164',order.phone_e164).maybeSingle(),
+    sb.from('jastip_open_orders')
+     .select('jastip_open_order_items(id,product_name,variant,notes,quantity,status,final_unit_price,admin_note)')
+     .eq('event_id',order.event_id).eq('phone_e164',order.phone_e164).limit(500),
+    sb.from('events').select('name').eq('id',order.event_id).maybeSingle()
+   ]);
+   if(groupResult.error||ordersResult.error||eventResult.error)throw groupResult.error||ordersResult.error||eventResult.error;
+   const items=(ordersResult.data||[]).flatMap((o)=>o.jastip_open_order_items||[]).map((item)=>{
     const price=item.status==='found'?item.final_unit_price:0;
     return {...item,final_unit_price:price,line_total:item.quantity*price};
    });
-   return respond({invoice_number:order.invoice_number,customer_name:order.customer_name,
-      created_at:order.created_at,event_name:ev.data?.name||'Event Jastip',
+   return respond({invoice_number:groupResult.data?.invoice_number||order.invoice_number,customer_name:order.customer_name,
+      created_at:groupResult.data?.created_at||order.created_at,event_name:eventResult.data?.name||'Event Jastip',
       items,total:items.reduce((n,i)=>n+i.line_total,0),
       final:items.length>0&&items.every(i=>i.status!=='pending')});
   }
@@ -84,8 +92,12 @@ Deno.serve(async(req:Request)=>{
     parsed.push({product_name,variant,notes,quantity,image_path:path});
   }
   if(files.reduce((n,f)=>n+f.bytes.byteLength,0)>12582912)return respond({error:'Total ukuran gambar maksimal 12 MB'},400);
-  const duplicate=await sb.from('jastip_open_orders').select('access_token,invoice_number').eq('client_key',clientKey).maybeSingle();
-  if(duplicate.data)return respond({ok:true,invoice_number:duplicate.data.invoice_number,token:duplicate.data.access_token},201);
+  const duplicate=await sb.from('jastip_open_orders').select('access_token,invoice_number,event_id,phone_e164').eq('client_key',clientKey).maybeSingle();
+  if(duplicate.data){
+   const existingGroup=await sb.from('jastip_open_event_invoices').select('invoice_number')
+     .eq('event_id',duplicate.data.event_id).eq('phone_e164',duplicate.data.phone_e164).maybeSingle();
+   return respond({ok:true,invoice_number:existingGroup.data?.invoice_number||duplicate.data.invoice_number,token:duplicate.data.access_token},201);
+  }
   const {data:ev,error:evError}=await sb.from('events').select('id')
     .eq('open_order_slug',slug).eq('open_order_enabled',true).eq('status','Aktif').maybeSingle();
   if(evError)throw evError;
@@ -120,7 +132,9 @@ Deno.serve(async(req:Request)=>{
    if(!recorded.error&&!recorded.data&&uploaded.length)await sb.storage.from('jastip-references').remove(uploaded);
    return respond({error:error.message.includes('Terlalu banyak')?'Terlalu banyak permintaan. Coba lagi nanti.':'Gagal menyimpan pesanan. Coba kembali.'},error.message.includes('Terlalu banyak')?429:422);
   }
-  return respond({ok:true,invoice_number:data.invoice_number,token:data.token},201);
+  const group=await sb.from('jastip_open_event_invoices').select('invoice_number')
+    .eq('event_id',ev.id).eq('phone_e164',phone).maybeSingle();
+  return respond({ok:true,invoice_number:group.data?.invoice_number||data.invoice_number,token:data.token},201);
  }catch(error){
   console.error('jastip-public request failed',error instanceof Error?error.message:'unknown');
   return respond({error:'Layanan sedang bermasalah. Silakan coba lagi.'},500);
