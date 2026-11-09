@@ -5,8 +5,9 @@ import {ArrowLeft,Check,CheckCircle2,ClipboardList,Copy,ExternalLink,ImageIcon,L
 import {getSupabase} from '@/lib/supabase';
 import '../../open-order.css';
 import {DeliveryAdmin} from '@/components/open-delivery-admin';
+import {ShopeeLinkEditor} from '@/components/shopee-link-editor';
 
-type EventInfo={id:string;name:string;event_date:string|null;status:string;open_order_enabled:boolean;open_order_slug:string|null};
+type EventInfo={id:string;name:string;event_date:string|null;status:string;open_order_enabled:boolean;open_order_slug:string|null;shopee_checkout_url:string|null};
 type Line={id:string;product_name:string;variant:string;notes:string;quantity:number;image_path:string;status:'pending'|'found'|'not_found';final_unit_price:number;admin_note:string};
 type Order={id:string;invoice_number:string;customer_name:string;phone_e164:string;event_id:string;access_token:string;created_at:string;jastip_open_order_items:Line[]};
 const currency=(value:number)=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(value);
@@ -66,7 +67,7 @@ export default function AdminOpenOrderPage(){
  const load=useCallback(async()=>{
   const sb=getSupabase();
   const [eventResult,orderResult]=await Promise.all([
-   sb.from('events').select('id,name,event_date,status,open_order_enabled,open_order_slug').order('created_at',{ascending:false}),
+   sb.from('events').select('id,name,event_date,status,open_order_enabled,open_order_slug,shopee_checkout_url').order('created_at',{ascending:false}),
    sb.from('jastip_open_orders').select('id,invoice_number,customer_name,phone_e164,event_id,access_token,created_at,jastip_open_order_items(id,product_name,variant,notes,quantity,image_path,status,final_unit_price,admin_note)').order('created_at',{ascending:false}).limit(500)
   ]);
   if(eventResult.error)throw eventResult.error;
@@ -192,12 +193,13 @@ export default function AdminOpenOrderPage(){
     </div>
     <button className="oo-button main" style={{marginTop:15}} disabled={busy}><Plus size={15}/> Buat & buka order</button>
    </form>
-   <div className="oo-card oo-section"><h2>Daftar event</h2>{events.length===0?<p className="oo-muted">Belum ada event.</p>:events.map(e=><div className="oo-invoice-line" key={e.id}>
+   <div className="oo-card oo-section"><h2>Daftar event</h2>{events.length===0?<p className="oo-muted">Belum ada event.</p>:events.map(e=><div className="oo-invoice-line" style={{flexWrap:"wrap"}} key={e.id}>
      <div style={{flex:1}}><strong>{e.name}</strong><div className="oo-muted">{e.event_date||'Tanpa tanggal'} · {e.status}</div><div style={{marginTop:6}}><span className={'oo-pill '+(e.open_order_enabled&&e.status==='Aktif'?'found':'pending')}>{e.open_order_enabled&&e.status==='Aktif'?'Menerima order':'Ditutup'}</span></div></div>
      <div className="oo-row">
       {e.open_order_slug&&<><button className="oo-button" onClick={()=>void copy(eventLink(e))}><Copy size={14}/> Copy link</button><a className="oo-button" href={eventLink(e)} target="_blank" rel="noopener noreferrer"><ExternalLink size={14}/> Buka</a></>}
       <button className="oo-button" disabled={busy||e.status!=='Aktif'&&!e.open_order_enabled} onClick={()=>void toggleEvent(e)}>{e.open_order_enabled?'Tutup order':'Buka order'}</button>
      </div>
+    <ShopeeLinkEditor event={e} onSaved={load}/>
     </div>)}</div>
   </div>}
   {tab==='orders'&&<div className="oo-section">
