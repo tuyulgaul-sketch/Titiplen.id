@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {ArrowLeft,Check,CheckCircle2,ClipboardList,Copy,ExternalLink,ImageIcon,LogOut,Plus,RefreshCw,ShoppingBag,XCircle} from 'lucide-react';
 import {getSupabase} from '@/lib/supabase';
 import '../../open-order.css';
+import {DeliveryAdmin} from '@/components/open-delivery-admin';
 
 type EventInfo={id:string;name:string;event_date:string|null;status:string;open_order_enabled:boolean;open_order_slug:string|null};
 type Line={id:string;product_name:string;variant:string;notes:string;quantity:number;image_path:string;status:'pending'|'found'|'not_found';final_unit_price:number;admin_note:string};
@@ -61,7 +62,7 @@ export default function AdminOpenOrderPage(){
  const [filter,setFilter]=useState('all');
  const [statusFilter,setStatusFilter]=useState('all');
  const [search,setSearch]=useState('');
- const [tab,setTab]=useState<'orders'|'events'>('orders');
+ const [tab,setTab]=useState<'orders'|'events'|'delivery'>('orders');
  const load=useCallback(async()=>{
   const sb=getSupabase();
   const [eventResult,orderResult]=await Promise.all([
@@ -180,7 +181,8 @@ export default function AdminOpenOrderPage(){
   </div>
   {error&&<div className="oo-message error">{error}</div>}
   {notice&&<div className="oo-message success">{notice}</div>}
-  <div className="oo-tabs oo-section"><button className={tab==='orders'?'active':''} onClick={()=>setTab('orders')}><ClipboardList size={15} style={{display:'inline'}}/> Purchase Order</button><button className={tab==='events'?'active':''} onClick={()=>setTab('events')}><ShoppingBag size={15} style={{display:'inline'}}/> Kelola Event</button></div>
+  <div className="oo-tabs oo-section"><button className={tab==='orders'?'active':''} onClick={()=>setTab('orders')}><ClipboardList size={15} style={{display:'inline'}}/> Purchase Order</button><button className={tab==='events'?'active':''} onClick={()=>setTab('events')}><ShoppingBag size={15} style={{display:'inline'}}/> Kelola Event</button><button className={tab==='delivery'?'active':''} onClick={()=>setTab('delivery')}><CheckCircle2 size={15} style={{display:'inline'}}/> Pengiriman</button></div>
+  {tab==='delivery'&&<DeliveryAdmin events={events} orders={orders}/>}
   {tab==='events'&&<div className="oo-section">
    <form className="oo-card" onSubmit={createEvent}>
     <h2>Buat event jastip</h2><p className="oo-muted">Share link event ke WhatsApp/Instagram. Customer bisa upload pesanan tanpa login.</p>
